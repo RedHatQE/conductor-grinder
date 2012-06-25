@@ -1,0 +1,9 @@
+To run this automation:
+
+1. Install aeolus
+2. Modify automatjon.properties (In $HOME) to match your environment 
+3. Run 'gradle console' to start the Grinder console
+3. Run 'gradle exec' to start the Grinder agent
+4. Start the agents from the console.
+5. ???
+6. Profit!

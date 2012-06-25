@@ -1,0 +1,69 @@
+apply plugin: 'eclipse'
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+allprojects {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+
+    compileGroovy.groovyOptions.fork = false
+    compileTestGroovy.groovyOptions.fork = false
+}
+
+
+eclipse {
+    project {
+        natures 'org.python.pydev.pythonNature'
+        buildCommand 'org.python.pydev.PyDevBuilder'
+    }
+}
+
+configurations {
+    grinder
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "${System.properties['user.home']}/.m2/repository"
+    }
+    [ 'https://repository.jboss.org/nexus/content/repositories/thirdparty-uploads', 'http://clojars.org/repo',
+      'http://download.java.net/maven/2/', 'http://repository.codehaus.org', 'http://snapshots.repository.codehaus.org' ].each { repo ->
+        maven {
+            url repo
+        }
+    }
+}
+
+dependencies {
+    compile('org.codehaus.groovy.modules.http-builder:http-builder:0.5.2') {
+        exclude group: 'org.codehouse.groovy', module: 'groovy'
+    }
+    grinder('net.sf.grinder:grinder:3.8') {
+        exclude group: 'org.python', module: 'jython'
+    }
+    grinder 'org.testng:testng:6.5.1',
+            'com.google.inject:guice:2.0',
+            'webui-framework:webui-framework:1.0.2-SNAPSHOT',
+            'org.python:jython:2.5.0'
+    groovy 'org.codehaus.groovy:groovy:1.8.6'
+}
+
+task exec(dependsOn: 'classes', type: JavaExec) {
+    main = 'net.grinder.Grinder'
+    classpath = configurations.grinder + sourceSets.main.runtimeClasspath
+    systemProperties = System.properties
+    args "${project.projectDir}/src/main/grinder/grinder.properties"
+}
+
+task console(type: JavaExec) {
+    main = 'net.grinder.Console'
+    classpath = configurations.grinder + sourceSets.main.runtimeClasspath
+}
+
+task proxy(type: JavaExec) {
+    main = 'net.grinder.TCPProxy'
+    classpath = configurations.grinder + sourceSets.main.runtimeClasspath
+    args = [ "-http", "-console" ]
+}
